@@ -1,18 +1,19 @@
-#!name=抖音去水印·最高画质下载 V2
-#!desc=保持正常自适应播放，仅将抖音下载地址替换为可用的最高画质源，并解除常见下载限制。notify=true 时弹出通知。
+#!name=抖音去水印·最高画质下载 V3
+#!desc=保持正常自适应播放；解除常见作者/视频类型下载限制；下载时优先使用响应中真实存在的 4K/最高画质无水印源。notify=true 时弹出通知。
 #!author=FearPotatoMine
 #!homepage=https://github.com/FearPotatoMine/Apple-Rule
 #!arguments=notify:false
 #!arguments-desc=notify: 替换成功时是否弹出通知(true/false)
 
 [Rule]
-# 禁用抖音相关 QUIC，使 HTTPS 流量可被 MITM 脚本处理
+# 禁用抖音相关 QUIC，使 HTTPS 流量回落到可被 MITM 的 TCP/TLS
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-KEYWORD,amemv)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-KEYWORD,snssdk)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-KEYWORD,douyin)),REJECT-NO-DROP
 
 [Script]
-http-response ^https?:\/\/(aweme|api\d*|aweme-[a-z0-9-]+)\.(amemv|snssdk)\.com\/aweme\/v\d\/(feed|aweme\/detail|multi\/aweme\/detail|aweme\/post|aweme\/favorite|mix\/aweme|hot\/search\/video\/list|general\/search\/single|search\/item|familiar\/feed|follow\/feed|nearby\/feed)\/? script-path=https://raw.githubusercontent.com/FearPotatoMine/Apple-Rule/refs/heads/main/douyin_nowm_v2.js, requires-body=true, max-size=0, timeout=10, tag=抖音去水印V2, argument=notify=[{notify}]
+# 覆盖 aweme v1/v2 常见 feed/detail/search/mix/post/favorite 等返回；脚本内部再递归识别 aweme 对象
+http-response ^https?:\/\/[^/]*\.(?:amemv|snssdk)\.com\/aweme\/v\d+\/(?:feed|aweme\/detail|multi\/aweme\/detail|aweme\/post|aweme\/favorite|mix\/aweme|hot\/search\/video\/list|general\/search\/single|search\/item|familiar\/feed|follow\/feed|nearby\/feed|search\/feed|search\/general|user\/post|user\/favorite)(?:\/|\?|$) script-path=https://raw.githubusercontent.com/FearPotatoMine/Apple-Rule/refs/heads/main/douyin_nowm_v2.js, requires-body=true, max-size=0, timeout=15, tag=抖音去水印V3, argument=notify=[{notify}]
 
 [MITM]
 hostname = %APPEND% aweme.snssdk.com, *.snssdk.com, *.amemv.com, api*.amemv.com, aweme-*.amemv.com
